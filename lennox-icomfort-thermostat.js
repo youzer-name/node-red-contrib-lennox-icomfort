@@ -163,12 +163,12 @@ module.exports = function(RED) {
                 const data = await res.json();
                 return { data, debug };
             }
-            if (command === 'away' || command === 'present') {
+            if (command === 'away' || command === 'home') {
                 const awayMode = command === 'away' ? '1' : '0';
                 const url = `https://services.myicomfort.com/DBAcessService.svc/SetAwayModeNew?gatewaysn=${encodeURIComponent(deviceId)}&zonenumber=0&awaymode=${awayMode}`;
                 const res = await fetch(url, { method: 'PUT', headers, body: '' });
                 let debug = { request: { url, headers: { ...headers, Authorization: 'Basic [redacted]' } }, status: res.status, statusText: res.statusText };
-                if (!res.ok) { debug.body = await res.text(); throw new Error('Set away/present failed: ' + JSON.stringify(debug)); }
+                if (!res.ok) { debug.body = await res.text(); throw new Error('Set away/home failed: ' + JSON.stringify(debug)); }
                 const data = await res.json();
                 return { data, debug };
             }
@@ -214,7 +214,7 @@ module.exports = function(RED) {
                     send(msg);
                     if (done) done();
                 } else if ([
-                    'setFanMode','setSetpoints','setThermostatMode','away','present',
+                    'setFanMode','setSetpoints','setThermostatMode','away','home',
                     'heatLevelUp','heatLevelDown','coolLevelUp','coolLevelDown'
                 ].includes(command)) {
                     const result = await dispatchCommand(command, params);

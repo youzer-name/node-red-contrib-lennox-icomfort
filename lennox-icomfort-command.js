@@ -33,7 +33,7 @@ module.exports = function(RED) {
                     // No extra params needed
                     break;
                 case 'away':
-                case 'present':
+                case 'home':
                     // No extra params needed
                     break;
                 case 'systemInfo':

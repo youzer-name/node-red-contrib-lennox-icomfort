@@ -19,7 +19,19 @@
 </script>
 
 <script type="text/x-red" data-help-name="lennox-icomfort-thermostat">
-<p>Polls the Lennox iComfort thermostat at a configurable interval and outputs status. Use the Get System Info button to fetch system details. All commands should be sent to this node via input messages.</p>
+<p>Polls the Lennox iComfort thermostat at a configurable interval and outputs status. All commands can be sent to this node via input messages, either from a command node or directly.</p>
+<p><b>Supported incoming message parameters:</b></p>
+<ul>
+    <li><code>command</code>: The command to execute. Supported values: <code>refresh</code>, <code>systemInfo</code>, <code>setSetpoints</code>, <code>setThermostatMode</code>, <code>setFanMode</code>, <code>away</code>, <code>home</code> (sent as <code>present</code> to API), <code>heatLevelUp</code>, <code>heatLevelDown</code>, <code>coolLevelUp</code>, <code>coolLevelDown</code>. <b>Note: The <code>present</code> command is not user-facing.</b></li>
+    <li><code>heatingSetpoint</code>: (number) Required for <code>setSetpoints</code>. The desired heating setpoint.</li>
+    <li><code>coolingSetpoint</code>: (number) Required for <code>setSetpoints</code>. The desired cooling setpoint.</li>
+    <li><code>mode</code>: (string) For <code>setThermostatMode</code>. One of: <code>off</code>, <code>heat</code>, <code>cool</code>, <code>auto</code>, <code>emergency heat</code>.</li>
+    <li><code>thermostatmode</code>: (string) Alternative to <code>mode</code> for <code>setThermostatMode</code>.</li>
+    <li><code>fanmode</code>: (string) For <code>setFanMode</code>. One of: <code>auto</code>, <code>on</code>, <code>circulate</code>.</li>
+    <li><code>params</code>: (object) Optional. Additional parameters to merge into the command.</li>
+</ul>
+<p>For <code>setSetpoints</code>, both <code>heatingSetpoint</code> and <code>coolingSetpoint</code> must be provided. For level up/down commands, no parameters are needed. The node will handle setpoint math automatically.</p>
+<p>Note: The <code>home</code> command is shown in the UI and documentation, but the actual command sent to the API is <code>present</code>. The <code>present</code> command is not user-facing.</p>
 </script>
 
 <script type="text/javascript">

@@ -188,14 +188,14 @@ module.exports = function(RED) {
                 const data = await res.json();
                 return { data, debug };
             }
-            if (command === 'away' || command === 'present') {
+            if (command === 'away' || command === 'home') {
                 const awayMode = command === 'away' ? '1' : '0';
                 // All params in query string, empty body
                 const url = `https://services.myicomfort.com/DBAcessService.svc/SetAwayModeNew?gatewaysn=${encodeURIComponent(deviceId)}&zonenumber=0&awaymode=${awayMode}`;
-                node.warn(`[API DEBUG] away/present URL: ${url}, Body: (empty)`);
+                node.warn(`[API DEBUG] away/home URL: ${url}, Body: (empty)`);
                 const res = await fetch(url, { method: 'PUT', headers, body: '' });
                 let debug = { request: { url, headers: { ...headers, Authorization: 'Basic [redacted]' } }, status: res.status, statusText: res.statusText };
-                if (!res.ok) { debug.body = await res.text(); throw new Error('Set away/present failed: ' + JSON.stringify(debug)); }
+                if (!res.ok) { debug.body = await res.text(); throw new Error('Set away/home failed: ' + JSON.stringify(debug)); }
                 const data = await res.json();
                 return { data, debug };
             }
