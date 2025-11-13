@@ -1,0 +1,154 @@
+<script type="text/javascript">
+RED.nodes.registerType('lennox-icomfort', {
+    category: 'function',
+    color: '#a6bbcf',
+    defaults: {
+    fanmode: { value: '', required: false },
+        name: { value: '' },
+        config: { type: 'lennox-icomfort-config', required: true },
+        command: { value: 'systemInfo', required: true },
+        polling: { value: 0, required: false },
+        heatingSetpoint: { value: '', required: false },
+        coolingSetpoint: { value: '', required: false },
+    // mode removed
+    // fanmode removed
+        thermostatmode: { value: '', required: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-thermometer-half',
+    label: function () { return this.name || 'Lennox iComfort'; },
+    oneditprepare: function () {
+        var node = this;
+        var $cmd = $('#node-input-command');
+        var configId = $('#node-input-config').val();
+        var configNode = RED.nodes.node(configId);
+        var deviceId = configNode && configNode.deviceId ? configNode.deviceId : '';
+        // Only allow systemInfo if deviceId is blank
+        var commands = deviceId ? [
+            { value: 'systemInfo', label: 'Get System Info' },
+            { value: 'refresh', label: 'Refresh' },
+            { value: 'setSetpoints', label: 'Set Setpoints' },
+            { value: 'setThermostatMode', label: 'Set Thermostat Mode' },
+            { value: 'setFanMode', label: 'Set Fan Mode' },
+            { value: 'away', label: 'Away' },
+            { value: 'present', label: 'Present' },
+            { value: 'heatLevelUp', label: 'Heat Level Up' },
+            { value: 'heatLevelDown', label: 'Heat Level Down' },
+            { value: 'coolLevelUp', label: 'Cool Level Up' },
+            { value: 'coolLevelDown', label: 'Cool Level Down' }
+        ] : [
+            { value: 'systemInfo', label: 'Get System Info' }
+        ];
+        $cmd.empty();
+        commands.forEach(function (cmd) {
+            $cmd.append($('<option></option>').val(cmd.value).text(cmd.label));
+        });
+        $cmd.val(node.command || 'systemInfo');
+        $cmd.trigger('change');
+
+        function updateFieldVisibility() {
+            var selected = $cmd.val();
+            // Only show setpoints for setSetpoints
+            var showSetpoints = selected === 'setSetpoints';
+            $('#row-heating-setpoint').toggle(showSetpoints);
+            $('#row-cooling-setpoint').toggle(showSetpoints);
+            // Only show thermostatmode for setThermostatMode
+            $('#row-thermostatmode').toggle(selected === 'setThermostatMode');
+            // Only show fanmode for setFanMode
+            $('#row-fanmode').toggle(selected === 'setFanMode');
+            // Only show polling for refresh
+            $('#row-polling').toggle(selected === 'refresh');
+    $('#node-input-fanmode').val(node.fanmode);
+        }
+        $cmd.on('change', updateFieldVisibility);
+        updateFieldVisibility();
+        // Restore UI fields
+        $('#node-input-heatingSetpoint').val(node.heatingSetpoint);
+        $('#node-input-coolingSetpoint').val(node.coolingSetpoint);
+    // $('#node-input-mode').val(node.mode); // removed
+    // $('#node-input-fanmode').val(node.fanmode); // removed
+        $('#node-input-thermostatmode').val(node.thermostatmode);
+        $('#node-input-polling').val(node.polling);
+    },
+    oneditsave: function () {
+    this.fanmode = $('#node-input-fanmode').val();
+        var command = $('#node-input-command').val();
+        var heatingSetpointVal = $('#node-input-heatingSetpoint').val();
+        var coolingSetpointVal = $('#node-input-coolingSetpoint').val();
+        if (command === 'setSetpoints') {
+            if (heatingSetpointVal === '' || coolingSetpointVal === '') {
+                RED.notify('Both heating and cooling setpoints are required.', 'error');
+                throw new Error('Both setpoints required');
+            }
+            var heat = Number(heatingSetpointVal);
+            var cool = Number(coolingSetpointVal);
+            if (isNaN(heat) || isNaN(cool)) {
+                RED.notify('Setpoints must be numbers.', 'error');
+                throw new Error('Setpoints must be numbers');
+            }
+            if (cool - heat < 2) {
+                RED.notify('Cooling setpoint must be at least 2°F higher than heating setpoint.', 'error');
+                throw new Error('Setpoint delta invalid');
+            }
+        }
+        this.heatingSetpoint = heatingSetpointVal;
+        this.coolingSetpoint = coolingSetpointVal;
+    // this.mode = $('#node-input-mode').val(); // removed
+    // this.fanmode = $('#node-input-fanmode').val(); // removed
+        this.thermostatmode = $('#node-input-thermostatmode').val();
+        this.polling = $('#node-input-polling').val();
+        this.command = command;
+    }
+});
+</script>
+<script type="text/x-red" data-template-name="lennox-icomfort">
+  <div class="form-row">
+      <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+      <input type="text" id="node-input-name">
+  </div>
+  <div class="form-row">
+      <label for="node-input-config"><i class="fa fa-cog"></i> Credentials</label>
+      <input type="hidden" id="node-input-config">
+  </div>
+  <div class="form-row">
+      <label for="node-input-command"><i class="fa fa-list"></i> Command</label>
+      <select id="node-input-command"></select>
+  </div>
+  <div class="form-row" id="row-fanmode" style="display:none;">
+      <label for="node-input-fanmode"><i class="fa fa-refresh"></i> Fan Mode</label>
+      <select id="node-input-fanmode">
+          <option value="">-- select --</option>
+          <option value="auto">auto</option>
+          <option value="on">on</option>
+          <option value="circulate">circulate</option>
+      </select>
+  </div>
+    <!-- Gateway SN is now only in config node -->
+  <div class="form-row" id="row-heating-setpoint" style="display:none;">
+      <label for="node-input-heatingSetpoint"><i class="fa fa-thermometer-half"></i> Heating Setpoint (&deg;F)</label>
+      <input type="number" id="node-input-heatingSetpoint" min="40" max="90">
+  </div>
+  <div class="form-row" id="row-cooling-setpoint" style="display:none;">
+      <label for="node-input-coolingSetpoint"><i class="fa fa-thermometer-half"></i> Cooling Setpoint (&deg;F)</label>
+      <input type="number" id="node-input-coolingSetpoint" min="50" max="99">
+  </div>
+    <!-- Mode field removed -->
+  <div class="form-row" id="row-thermostatmode">
+      <label for="node-input-thermostatmode"><i class="fa fa-cogs"></i> Thermostat Mode</label>
+      <select id="node-input-thermostatmode">
+        <option value="off">off</option>
+        <option value="heat">heat</option>
+        <option value="cool">cool</option>
+        <option value="auto">auto</option>
+      </select>
+  </div>
+  <div class="form-row" id="row-polling">
+      <label for="node-input-polling"><i class="fa fa-clock-o"></i> Polling Interval (sec, 0=off)</label>
+      <input type="number" id="node-input-polling" min="0">
+  </div>
+  <div class="form-row" id="row-dashboard2">
+      <label for="node-input-dashboard2"><i class="fa fa-desktop"></i> Dashboard 2 UI</label>
+      <input type="checkbox" id="node-input-dashboard2">
+  </div>
+</script>

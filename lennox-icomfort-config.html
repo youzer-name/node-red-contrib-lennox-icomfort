@@ -1,0 +1,46 @@
+<script type="text/javascript">
+RED.nodes.registerType('lennox-icomfort-config', {
+    category: 'config',
+    defaults: {
+        name: {value: ''},
+        username: {value: '', required: true},
+        password: {value: '', required: true},
+        deviceId: {value: '', required: false} // Gateway SN, optional
+    },
+    label: function() {
+        let label = this.name || this.username || 'Lennox iComfort Config';
+        if (this.deviceId) label += ' (' + this.deviceId + ')';
+        return label;
+    },
+    oneditprepare: function () {
+        $('#node-config-input-username').val(this.username);
+        $('#node-config-input-password').val(this.password);
+        $('#node-config-input-deviceId').val(this.deviceId);
+        $('#node-config-input-name').val(this.name);
+    },
+    oneditsave: function () {
+        this.username = $('#node-config-input-username').val();
+        this.password = $('#node-config-input-password').val();
+        this.deviceId = $('#node-config-input-deviceId').val();
+        this.name = $('#node-config-input-name').val();
+    }
+});
+</script>
+<script type="text/x-red" data-template-name="lennox-icomfort-config">
+  <div class="form-row">
+      <label for="node-config-input-username"><i class="fa fa-user"></i> Username</label>
+      <input type="text" id="node-config-input-username">
+  </div>
+  <div class="form-row">
+      <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+      <input type="password" id="node-config-input-password">
+  </div>
+  <div class="form-row">
+      <label for="node-config-input-deviceId"><i class="fa fa-microchip"></i> Gateway SN (optional)</label>
+      <input type="text" id="node-config-input-deviceId" placeholder="Gateway Serial Number">
+  </div>
+  <div class="form-row">
+      <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+      <input type="text" id="node-config-input-name">
+  </div>
+</script>

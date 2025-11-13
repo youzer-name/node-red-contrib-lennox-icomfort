@@ -1,0 +1,27 @@
+{
+  "name": "node-red-contrib-lennox-icomfort",
+  "version": "0.1.0",
+  "description": "Node-RED node for controlling Lennox iComfort thermostats, with Dashboard 2 support.",
+  "main": "lennox-icomfort.js",
+  "keywords": [
+    "node-red",
+    "lennox",
+    "icomfort",
+    "thermostat",
+    "dashboard2"
+  ],
+  "node-red": {
+    "nodes": {
+      "lennox-icomfort": "lennox-icomfort.js",
+      "lennox-icomfort-config": "lennox-icomfort-config.js",
+      "lennox-icomfort-thermostat": "lennox-icomfort-thermostat.js",
+      "lennox-icomfort-command": "lennox-icomfort-command.js",
+      "lennox-icomfort-status": "lennox-icomfort-status.js"
+    }
+  },
+  "author": "Your Name <your@email.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

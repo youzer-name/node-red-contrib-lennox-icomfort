@@ -1,0 +1,48 @@
+
+<script type="text/x-red" data-template-name="lennox-icomfort-thermostat">
+  <div class="form-row">
+      <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+      <input type="text" id="node-input-name">
+  </div>
+  <div class="form-row">
+      <label for="node-input-config"><i class="fa fa-cog"></i> Credentials</label>
+      <input type="hidden" id="node-input-config">
+  </div>
+  <div class="form-row">
+      <label for="node-input-polling"><i class="fa fa-clock-o"></i> Polling Interval (sec, 0=off)</label>
+      <input type="number" id="node-input-polling" min="0">
+  </div>
+  <div class="form-row">
+      <label for="node-input-createGlobal"><i class="fa fa-globe"></i> Create global variable</label>
+      <input type="checkbox" id="node-input-createGlobal" style="width:auto;">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="lennox-icomfort-thermostat">
+<p>Polls the Lennox iComfort thermostat at a configurable interval and outputs status. Use the Get System Info button to fetch system details. All commands should be sent to this node via input messages.</p>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType('lennox-icomfort-thermostat', {
+    category: 'function',
+    color: '#a6bbcf',
+    defaults: {
+        name: { value: '' },
+        config: { type: 'lennox-icomfort-config', required: true },
+        polling: { value: 0, required: false },
+        createGlobal: { value: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-thermometer-half',
+    label: function () { return this.name || 'Lennox iComfort Thermostat'; },
+    oneditprepare: function () {
+        $('#node-input-polling').val(this.polling);
+        $('#node-input-createGlobal').prop('checked', this.createGlobal);
+    },
+    oneditsave: function () {
+        this.polling = $('#node-input-polling').val();
+        this.createGlobal = $('#node-input-createGlobal').prop('checked');
+    }
+});
+</script>
