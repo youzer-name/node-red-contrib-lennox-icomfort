@@ -26,7 +26,12 @@ npm install node-red-contrib-lennox-icomfort
    - Select a command. Only relevant fields will be shown.
 6. Command may also be set directly in the incoming message. See the built-in help text in the Thermostat node for additional info.
    - The command node ignores incoming message parameters and always sends its configured command.
-   
+
+**Deadband enforcement:**
+- For `setSetpoints`, the cooling setpoint must be at least 3°F higher than the heating setpoint. The editor will prevent saving if this is not met.
+- For level up/down commands, the thermostat node will automatically adjust the other setpoint if needed to maintain the 3°F deadband.
+- In High Dehumidification mode, the deadband is 5°F.  This is not currently handled by this node.  Setpoint or level up/down command may silently fail if they don't meet this deadband requirement and the thermostat is in this mode.  See https://www.lennox.com/literature/Lennox_icomfortWiFi_Installation_Manual.pdf (page 17).
+
 - Supported commands: refresh, systemInfo, setSetpoints, setThermostatMode, setFanMode, away, home, heatLevelUp, heatLevelDown, coolLevelUp, coolLevelDown.
    - Level up/down commands adjust the setpoint by 1º and do not require setpoint input.
    - For `setSetpoints`, both heating and cooling setpoints are required.

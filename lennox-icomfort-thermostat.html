@@ -30,7 +30,7 @@
     <li><code>fanmode</code>: (string) For <code>setFanMode</code>. One of: <code>auto</code>, <code>on</code>, <code>circulate</code>.</li>
     <li><code>params</code>: (object) Optional. Additional parameters to merge into the command.</li>
 </ul>
-<p>For <code>setSetpoints</code>, both <code>heatingSetpoint</code> and <code>coolingSetpoint</code> must be provided. For level up/down commands, no parameters are needed. The node will handle setpoint math automatically.</p>
+<p>For <code>setSetpoints</code>, both <code>heatingSetpoint</code> and <code>coolingSetpoint</code> must be provided. The cooling setpoint must be at least 3°F higher than the heating setpoint (deadband enforcement). For level up/down commands, no parameters are needed. The node will automatically adjust the other setpoint if needed to maintain the 3°F deadband.</p>
 </script>
 
 <script type="text/javascript">

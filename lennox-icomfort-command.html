@@ -32,6 +32,18 @@
             }
             $("#node-input-command").change(showFields);
             showFields();
+        },
+        oneditsave: function () {
+            var cmd = $("#node-input-command").val();
+            // Only enforce deadband for setSetpoints command
+            if (cmd === 'setSetpoints') {
+                var heat = parseFloat($("#node-input-heatingSetpoint").val());
+                var cool = parseFloat($("#node-input-coolingSetpoint").val());
+                if (!isNaN(heat) && !isNaN(cool) && (cool - heat < 3)) {
+                    RED.notify("Cooling setpoint must be at least 3°F higher than heating setpoint (deadband).", "error");
+                    throw new Error("Deadband not met");
+                }
+            }
         }
     });
 </script>
@@ -87,4 +99,5 @@
 
 <script type="text/x-red" data-help-name="lennox-icomfort-command">
 <p>Send a command to the Lennox iComfort Thermostat via the thermostat node. Select a command and fill in any required parameters. This node does not require a config node and simply outputs the command/params for the thermostat node to process.</p>
+<p><b>Deadband enforcement:</b> For <code>setSetpoints</code>, the cooling setpoint must be at least 3°F higher than the heating setpoint. The editor will prevent saving if this requirement is not met.</p>
 </script>

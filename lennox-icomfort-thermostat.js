@@ -132,7 +132,7 @@ module.exports = function(RED) {
                     let heatingSetpoint = Number(params.heatingSetpoint);
                     let coolingSetpoint = Number(params.coolingSetpoint);
                     if (isNaN(heatingSetpoint) || isNaN(coolingSetpoint)) throw new Error('Both setpoints required');
-                    if (coolingSetpoint - heatingSetpoint < 2) throw new Error('Cooling setpoint must be at least 2°F higher than heating setpoint');
+                    if (coolingSetpoint - heatingSetpoint < 3) throw new Error('Cooling setpoint must be at least 3°F higher than heating setpoint');
                     opts.heatingSetpoint = heatingSetpoint;
                     opts.coolingSetpoint = coolingSetpoint;
                 }
@@ -144,14 +144,22 @@ module.exports = function(RED) {
                 if (command === 'heatLevelUp' || command === 'heatLevelDown') {
                     let heatingSetpoint = Number(opts.heatingSetpoint) || 70;
                     heatingSetpoint += (command === 'heatLevelUp' ? 1 : -1);
-                    let coolingSetpoint = Number(opts.coolingSetpoint) || (heatingSetpoint + 2);
+                    let coolingSetpoint = Number(opts.coolingSetpoint) || (heatingSetpoint + 3);
+                    // Enforce deadband: adjust coolingSetpoint if needed
+                    if (coolingSetpoint - heatingSetpoint < 3) {
+                        coolingSetpoint = heatingSetpoint + 3;
+                    }
                     opts.heatingSetpoint = heatingSetpoint;
                     opts.coolingSetpoint = coolingSetpoint;
                 }
                 if (command === 'coolLevelUp' || command === 'coolLevelDown') {
                     let coolingSetpoint = Number(opts.coolingSetpoint) || 75;
                     coolingSetpoint += (command === 'coolLevelUp' ? 1 : -1);
-                    let heatingSetpoint = Number(opts.heatingSetpoint) || (coolingSetpoint - 2);
+                    let heatingSetpoint = Number(opts.heatingSetpoint) || (coolingSetpoint - 3);
+                    // Enforce deadband: adjust heatingSetpoint if needed
+                    if (coolingSetpoint - heatingSetpoint < 3) {
+                        heatingSetpoint = coolingSetpoint - 3;
+                    }
                     opts.coolingSetpoint = coolingSetpoint;
                     opts.heatingSetpoint = heatingSetpoint;
                 }
