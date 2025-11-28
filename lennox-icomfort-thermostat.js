@@ -110,13 +110,22 @@ module.exports = function(RED) {
             const { username, password, deviceId } = getCredentials();
             if (!deviceId && command !== 'systemInfo') throw new Error('DeviceId (Gateway SN) required for this command');
             const headers = { 'Authorization': getAuthHeader(username, password), 'Content-Type': 'application/json; charset=utf-8' };
-            if (command === 'setFanMode' || command === 'setSetpoints' || command === 'setThermostatMode' || command === 'heatLevelUp' || command === 'heatLevelDown' || command === 'coolLevelUp' || command === 'coolLevelDown') {
-                // Always refresh first
+            // Commands that require a refresh and tStat
+            const needsRefresh = [
+                'setFanMode', 'setSetpoints', 'setThermostatMode',
+                'heatLevelUp', 'heatLevelDown', 'coolLevelUp', 'coolLevelDown',
+                'away', 'home'
+            ];
+            let tStat = undefined;
+            if (needsRefresh.includes(command)) {
                 const refreshUrl = `https://services.myicomfort.com/DBAcessService.svc/GetTStatInfoList?GatewaySN=${encodeURIComponent(deviceId)}&TempUnit=0&Cancel_Away=-1`;
                 const refreshRes = await fetch(refreshUrl, { method: 'GET', headers });
                 if (!refreshRes.ok) { const body = await refreshRes.text(); throw new Error('Refresh before command failed: ' + body); }
                 const refreshData = await refreshRes.json();
-                const tStat = (refreshData.tStatInfo && refreshData.tStatInfo[0]) || {};
+                tStat = (refreshData.tStatInfo && refreshData.tStatInfo[0]) || {};
+            }
+
+            if (command === 'setFanMode' || command === 'setSetpoints' || command === 'setThermostatMode' || command === 'heatLevelUp' || command === 'heatLevelDown' || command === 'coolLevelUp' || command === 'coolLevelDown') {
                 let opts = {
                     heatingSetpoint: tStat.Heat_Set_Point,
                     coolingSetpoint: tStat.Cool_Set_Point,
@@ -170,11 +179,13 @@ module.exports = function(RED) {
                 if (!res.ok) { debug.body = await res.text(); throw new Error(`${command} failed: ` + JSON.stringify(debug)); }
                 const data = await res.json();
                 return { data, debug };
-            }
-            if (command === 'away' || command === 'home') {
+            } else if (command === 'away' || command === 'home') {
                 const awayMode = command === 'away' ? '1' : '0';
-                const url = `https://services.myicomfort.com/DBAcessService.svc/SetAwayModeNew?gatewaysn=${encodeURIComponent(deviceId)}&zonenumber=0&awaymode=${awayMode}`;
-                const res = await fetch(url, { method: 'PUT', headers, body: '' });
+                // Add coolsetpoint and heatsetpoint as lowercase query parameters
+                const coolsetpoint = tStat.Cool_Set_Point;
+                const heatsetpoint = tStat.Heat_Set_Point;
+                const url = `https://services.myicomfort.com/DBAcessService.svc/SetAwayModeNew?GatewaySN=${encodeURIComponent(deviceId)}&ZoneNumber=0&awayMode=${awayMode}&TempScale=0&coolsetpoint=${encodeURIComponent(coolsetpoint)}&heatsetpoint=${encodeURIComponent(heatsetpoint)}`;
+                const res = await fetch(url, { method: 'PUT', headers });
                 let debug = { request: { url, headers: { ...headers, Authorization: 'Basic [redacted]' } }, status: res.status, statusText: res.statusText };
                 if (!res.ok) { debug.body = await res.text(); throw new Error('Set away/home failed: ' + JSON.stringify(debug)); }
                 const data = await res.json();
